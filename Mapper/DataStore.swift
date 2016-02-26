@@ -10,6 +10,8 @@ import Foundation
 import Alamofire
 import SwiftyJSON
 import MapKit
+import AddressBook
+import Contacts
 
 let kDateString = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 let kLoadedNotification = "com.lss.loaded"
@@ -52,6 +54,16 @@ class EarthquakeAnotation: NSObject, MKAnnotation {
         default:
             return UIColor.redColor()
         }
+    }
+    
+    func mapItem() -> MKMapItem {
+        let addressDictionary:[String:AnyObject]? = [CNPostalAddressStreetKey: subtitle ?? "no info"]
+        let placemark = MKPlacemark(coordinate: coordinate, addressDictionary: addressDictionary)
+        
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = title
+        
+        return mapItem
     }
 }
 
