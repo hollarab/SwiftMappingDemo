@@ -9,15 +9,18 @@
 import UIKit
 import MapKit
 
-class ViewController: UIViewController {
+class MapViewController: UIViewController {
 
     @IBOutlet weak var myMapView: MKMapView!
-    @IBOutlet weak var nextButton: UIButton!
+    @IBOutlet weak var infoButton: UIButton!
+    @IBOutlet var myLabel: UILabel!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "loadDone", name: kLoadedNotification, object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataUpdated", name: kLoadedNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataWillUpdate", name: kRefreshingNotification, object: nil)
+        
         myMapView.delegate = self
         centerMapOnLocation(initialLocation)
         DataStore.sharedInstance.loadData()
@@ -25,7 +28,7 @@ class ViewController: UIViewController {
 
     // MARK: - Inital Location 
 
-    let regionRadius: CLLocationDistance = 5_000_000    // 5 Million - underscores are convenience
+    let regionRadius: CLLocationDistance = 5_000_000                                // 5 Million Meters - underscores are convenience
     let initialLocation = CLLocation(latitude: 21.282778, longitude: -157.829444)   // Honalulu, CO
 //    let initialLocation = CLLocation(latitude: 36.5853, longitude: -118.032)      // Westminster, CO
 
@@ -35,15 +38,18 @@ class ViewController: UIViewController {
     }
 
     
-    // MARK: - Load Data
-    
-    func loadDone() {
-        print("Retrieved \(DataStore.sharedInstance.earthquakes.count) events")
-        
+    // MARK: - Observers
+    func dataUpdated() {
+        myLabel.text = "\(DataStore.sharedInstance.earthquakes.count) events"
         for quake in DataStore.sharedInstance.earthquakes {
             let anotation = EarthquakeAnotation(earthquake: quake)
             myMapView.addAnnotation(anotation)
         }
+    }
+    
+    func dataWillUpdate() {
+        myLabel.text = "Loading..."
+        myMapView.removeAnnotations(myMapView.annotations)
     }
     
     
@@ -65,7 +71,7 @@ class ViewController: UIViewController {
 }
 
 
-extension ViewController: MKMapViewDelegate {
+extension MapViewController: MKMapViewDelegate {
 
     func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
         if let annotation = annotation as? EarthquakeAnotation {
@@ -95,10 +101,23 @@ extension ViewController: MKMapViewDelegate {
     }
 }
 
-extension ViewController: CLLocationManagerDelegate {
+extension MapViewController: CLLocationManagerDelegate {
     func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         if status == .AuthorizedWhenInUse {
             myMapView.showsUserLocation = true
         }
     }
 }
+
+// MARK: - Navigation and Unwind seques
+extension MapViewController {
+    
+    @IBAction func infoButtonTouched(sender:AnyObject) {
+        performSegueWithIdentifier("Info", sender: self)
+    }
+    
+    @IBAction func mapInfoDismissed(segue:UIStoryboardSegue) {
+        print("unwind segues reached")
+    }
+}
+

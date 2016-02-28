@@ -15,6 +15,10 @@ import Contacts
 
 let kDateString = "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
 let kLoadedNotification = "com.lss.loaded"
+let kRefreshingNotification = "com.lss.refreshing"
+
+let smallQuakeListURL = NSURL(string: "https://aqueous-depths-77407.herokuapp.com/earthquakes.json")      // 100 Earthquakes
+let largeQuakeListURL = NSURL(string: "https://earthquake-grapher.herokuapp.com/earthquakes.json")        // 10000 Earthquakes
 
 struct Earthquake {
     var id:Int
@@ -76,12 +80,27 @@ class DataStore {
     static var sharedInstance = DataStore()
     var earthquakes = [Earthquake]()
     
+    private var currentURL = smallQuakeListURL
+    
     private init() {}
     
+    func setUseLargeList(useLarge:Bool) {
+        if useLarge {
+            currentURL = largeQuakeListURL
+        } else {
+            currentURL = smallQuakeListURL
+        }
+        loadData()
+    }
+    
+    func usingLargeSet() -> Bool {
+        return currentURL === largeQuakeListURL
+    }
+    
     func loadData() {
-        let url = NSURL(string: "https://aqueous-depths-77407.herokuapp.com/earthquakes.json")      // 100 Earthquakes
-//        let url = NSURL(string: "https://earthquake-grapher.herokuapp.com/earthquakes.json")      // 10000 Earthquakes
-        Alamofire.request(.GET, url!).validate().responseJSON { response in
+        NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: kRefreshingNotification, object: nil))
+        earthquakes = [Earthquake]()
+        Alamofire.request(.GET, currentURL!).validate().responseJSON { response in
             switch response.result {
             case .Success:
                 if let value = response.result.value {
