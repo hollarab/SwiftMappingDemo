@@ -14,7 +14,6 @@ class InfoViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataUpdated", name: kLoadedNotification, object: nil)
         updateUI()
     }
@@ -29,7 +28,6 @@ class InfoViewController: UIViewController {
         NSNotificationCenter.defaultCenter().removeObserver(self)
     }
 
-
     // MARK: - Notifications
     func dataUpdated() {
         updateUI()
@@ -40,11 +38,8 @@ class InfoViewController: UIViewController {
         DataStore.sharedInstance.setUseLargeList(useLargeSwitch.on)
     }
 
-    
     /// Load Model into View
     func updateUI() {
         useLargeSwitch.on = DataStore.sharedInstance.usingLargeSet()
     }
-    
-    
 }

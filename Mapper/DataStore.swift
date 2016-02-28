@@ -47,6 +47,16 @@ class EarthquakeAnotation: NSObject, MKAnnotation {
        return earthquake.place
     }
     
+    func mapItem() -> MKMapItem {
+        let addressDictionary:[String:AnyObject]? = [CNPostalAddressStreetKey: subtitle ?? "no info"]
+        let placemark = MKPlacemark(coordinate: coordinate, addressDictionary: addressDictionary)
+        
+        let mapItem = MKMapItem(placemark: placemark)
+        mapItem.name = title
+        
+        return mapItem
+    }
+
     func pinTintColor() -> UIColor  {
         switch earthquake.mag {
         case 0..<0.5:
@@ -63,16 +73,7 @@ class EarthquakeAnotation: NSObject, MKAnnotation {
             return UIColor.redColor()
         }
     }
-    
-    func mapItem() -> MKMapItem {
-        let addressDictionary:[String:AnyObject]? = [CNPostalAddressStreetKey: subtitle ?? "no info"]
-        let placemark = MKPlacemark(coordinate: coordinate, addressDictionary: addressDictionary)
-        
-        let mapItem = MKMapItem(placemark: placemark)
-        mapItem.name = title
-        
-        return mapItem
-    }
+
 }
 
 
@@ -118,7 +119,6 @@ class DataStore {
                         self.earthquakes.append(Earthquake(id: id, long: long, lat: lat, mag: mag, date: date, place:place))
                     }
                 }
-
                 NSNotificationCenter.defaultCenter().postNotification(NSNotification(name: kLoadedNotification, object: nil))
             case .Failure(let error):
                 print(error)

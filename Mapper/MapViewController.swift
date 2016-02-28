@@ -17,26 +17,37 @@ class MapViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataUpdated", name: kLoadedNotification, object: nil)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataWillUpdate", name: kRefreshingNotification, object: nil)
-        
+
         myMapView.delegate = self
         centerMapOnLocation(initialLocation)
+        addWestminsterQuake()
+        
+        checkLocationAuthorizationStatus()
+
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataUpdated", name: kLoadedNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataWillUpdate", name: kRefreshingNotification, object: nil)
+    
         DataStore.sharedInstance.loadData()
     }
 
-    // MARK: - Inital Location 
+
+    // MARK: - Inital Location
 
     let regionRadius: CLLocationDistance = 5_000_000                                // 5 Million Meters - underscores are convenience
-    let initialLocation = CLLocation(latitude: 21.282778, longitude: -157.829444)   // Honalulu, CO
-//    let initialLocation = CLLocation(latitude: 36.5853, longitude: -118.032)      // Westminster, CO
+//    let initialLocation = CLLocation(latitude: 21.282778, longitude: -157.829444)   // Honalulu, HI
+    let initialLocation = CLLocation(latitude: 39.8361, longitude: -105.0372)         // Westminster, CO
 
     func centerMapOnLocation(location: CLLocation) {
         let coordinateRegion = MKCoordinateRegionMakeWithDistance(location.coordinate, regionRadius * 2.0, regionRadius * 2.0)
         myMapView.setRegion(coordinateRegion, animated: true)
     }
-
+    
+    
+    func addWestminsterQuake() {
+        let quake = Earthquake(id: 1, long: -105.0372, lat: 39.8361, mag: 1.3, date: NSDate(), place:"DaVinci Coders")
+        let annotation = EarthquakeAnotation(earthquake: quake)
+        myMapView.addAnnotation(annotation)
+    }
     
     // MARK: - Observers
     func dataUpdated() {
@@ -53,7 +64,7 @@ class MapViewController: UIViewController {
     }
     
     
-    // MARK: - location manager to authorize user location for Maps app
+    // MARK: - location manager to authorize user location
     var locationManager = CLLocationManager()
     func checkLocationAuthorizationStatus() {
         locationManager.delegate = self
@@ -64,10 +75,6 @@ class MapViewController: UIViewController {
         }
     }
     
-    override func viewDidAppear(animated: Bool) {
-        super.viewDidAppear(animated)
-        checkLocationAuthorizationStatus()
-    }
 }
 
 
@@ -85,14 +92,14 @@ extension MapViewController: MKMapViewDelegate {
                 view?.canShowCallout = true
                 view?.calloutOffset = CGPoint(x: -5, y: 5)
                 view?.rightCalloutAccessoryView = UIButton(type: .DetailDisclosure)
-            }
                 
+            }
             view?.pinTintColor = annotation.pinTintColor()
             return view!
         }
         return nil
     }
-
+    
     func mapView(mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
         guard let location = view.annotation as? EarthquakeAnotation else {return}
         
@@ -101,10 +108,12 @@ extension MapViewController: MKMapViewDelegate {
     }
 }
 
+
 extension MapViewController: CLLocationManagerDelegate {
     func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         if status == .AuthorizedWhenInUse {
             myMapView.showsUserLocation = true
+            
         }
     }
 }
