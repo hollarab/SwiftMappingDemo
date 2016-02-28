@@ -19,10 +19,24 @@ class ViewController: UIViewController {
         // Do any additional setup after loading the view, typically from a nib.
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "loadDone", name: kLoadedNotification, object: nil)
         myMapView.delegate = self
+        centerMapOnLocation(initialLocation)
         DataStore.sharedInstance.loadData()
     }
 
+    // MARK: - Inital Location 
 
+    let regionRadius: CLLocationDistance = 5_000_000    // 5 Million - underscores are convenience
+    let initialLocation = CLLocation(latitude: 21.282778, longitude: -157.829444)   // Honalulu, CO
+//    let initialLocation = CLLocation(latitude: 36.5853, longitude: -118.032)      // Westminster, CO
+
+    func centerMapOnLocation(location: CLLocation) {
+        let coordinateRegion = MKCoordinateRegionMakeWithDistance(location.coordinate, regionRadius * 2.0, regionRadius * 2.0)
+        myMapView.setRegion(coordinateRegion, animated: true)
+    }
+
+    
+    // MARK: - Load Data
+    
     func loadDone() {
         print("Retrieved \(DataStore.sharedInstance.earthquakes.count) events")
         
@@ -32,13 +46,6 @@ class ViewController: UIViewController {
         }
     }
     
-    
-    let initialLocation = CLLocation(latitude: 36.5853, longitude: -118.032)
-    let regionRadius: CLLocationDistance = 100000
-    func centerMapOnLocation(location: CLLocation) {
-        let coordinateRegion = MKCoordinateRegionMakeWithDistance(location.coordinate, regionRadius * 2.0, regionRadius * 2.0)
-        myMapView.setRegion(coordinateRegion, animated: true)
-    }
     
     // MARK: - location manager to authorize user location for Maps app
     var locationManager = CLLocationManager()

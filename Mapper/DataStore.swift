@@ -36,7 +36,7 @@ class EarthquakeAnotation: NSObject, MKAnnotation {
     }
     
     var title: String? {
-        return "ID: \(earthquake.id)"
+        return "Mag: \(earthquake.mag.format("0.2"))"
     }
     
     var subtitle: String? {
@@ -47,8 +47,12 @@ class EarthquakeAnotation: NSObject, MKAnnotation {
         switch earthquake.mag {
         case 0..<0.5:
             return UIColor.greenColor()
-        case 0.5..<2:
+        case 0.5..<1:
+            return UIColor.blueColor()
+        case 1..<1.5:
             return UIColor.yellowColor()
+        case 1.5..<2:
+            return UIColor.magentaColor()
         case 2..<3:
             return UIColor.orangeColor()
         default:
@@ -75,7 +79,8 @@ class DataStore {
     private init() {}
     
     func loadData() {
-        let url = NSURL(string: "https://aqueous-depths-77407.herokuapp.com/earthquakes.json")
+        let url = NSURL(string: "https://aqueous-depths-77407.herokuapp.com/earthquakes.json")      // 100 Earthquakes
+//        let url = NSURL(string: "https://earthquake-grapher.herokuapp.com/earthquakes.json")      // 10000 Earthquakes
         Alamofire.request(.GET, url!).validate().responseJSON { response in
             switch response.result {
             case .Success:
